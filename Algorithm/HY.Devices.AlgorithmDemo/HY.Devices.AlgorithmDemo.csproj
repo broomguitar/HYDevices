@@ -1,0 +1,42 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+	  <TargetFrameworks>net48;net6.0-windows</TargetFrameworks>
+    <OutputType>WinExe</OutputType>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <UseWindowsForms>true</UseWindowsForms>
+    <UseWPF>true</UseWPF>
+    <ImportWindowsDesktopTargets>true</ImportWindowsDesktopTargets>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">
+    <OutputPath>bin\x64\Debug\</OutputPath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">
+    <OutputPath>bin\x64\Release\</OutputPath>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\Camera\HY.Devices.Camera\HY.Devices.Camera.csproj" />
+    <ProjectReference Include="..\HY.Devices.Algorithm\HY.Devices.Algorithm.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
+    <PackageReference Include="System.ComponentModel.Composition" Version="8.0.0" />
+    <PackageReference Include="System.Data.DataSetExtensions" Version="4.5.0" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+    <PackageReference Include="System.Configuration.ConfigurationManager" Version="8.0.0" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="halcondotnetxl">
+      <HintPath>..\Libs\halcondotnetxl.dll</HintPath>
+    </Reference>
+    <Reference Include="HYCommonUtils.SerializationUtils">
+      <HintPath>..\Libs\HYCommonUtils.SerializationUtils.dll</HintPath>
+    </Reference>
+    <Reference Include="HYWindowUtils.WPF.CommonUtils">
+      <HintPath>..\Libs\HYWindowUtils.WPF.CommonUtils.dll</HintPath>
+    </Reference>
+    <Reference Include="HYWindowUtils.WPF.VMBaseUtil">
+      <HintPath>..\Libs\HYWindowUtils.WPF.VMBaseUtil.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+</Project>

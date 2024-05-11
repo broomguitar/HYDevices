@@ -1,0 +1,32 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+	  <TargetFrameworks>net48;net6.0-windows</TargetFrameworks>
+    <OutputType>Library</OutputType>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <AssemblyTitle>HY.Devices.Algorithm.Haier_TeBing</AssemblyTitle>
+    <Company>HP Inc.</Company>
+    <Product>HY.Devices.Algorithm.Haier_TeBing</Product>
+    <Copyright>Copyright © HP Inc. 2022</Copyright>
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
+    <FileVersion>1.0.0.0</FileVersion>
+  </PropertyGroup>
+  <ItemGroup>
+    <Folder Include="Paddle\" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\HY.Devices.Algorithm\HY.Devices.Algorithm.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Analyzer Include="..\Libs\halcondotnet.dll" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
+    <PackageReference Include="System.ComponentModel.Composition" Version="8.0.0" />
+    <PackageReference Include="System.Data.DataSetExtensions" Version="4.5.0" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="halcondotnetxl">
+      <HintPath>..\Libs\halcondotnetxl.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+</Project>

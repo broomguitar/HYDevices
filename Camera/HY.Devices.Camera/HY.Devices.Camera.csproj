@@ -1,0 +1,38 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFrameworks>net48;net6.0-windows</TargetFrameworks>
+    <OutputType>Library</OutputType>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <UseWPF>true</UseWPF>
+    <ImportWindowsDesktopTargets>true</ImportWindowsDesktopTargets>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DocumentationFile>bin\Debug\HY.Devices.Camera.xml</DocumentationFile>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
+    <PackageReference Include="System.Data.DataSetExtensions" Version="4.5.0" />
+    <PackageReference Include="System.Drawing.Common" Version="8.0.0" />
+    <PackageReference Include="System.IO.Ports" Version="8.0.0" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="Basler.Pylon">
+      <HintPath>..\LIbs\Basler\Basler.Pylon.dll</HintPath>
+    </Reference>
+    <Reference Include="DALSA.SaperaLT.SapClassBasic">
+      <HintPath>..\LIbs\Dalsa\DALSA.SaperaLT.SapClassBasic.dll</HintPath>
+    </Reference>
+    <Reference Include="IKapBoardClassLibrary">
+      <HintPath>..\LIbs\IK\IKapBoardClassLibrary.dll</HintPath>
+    </Reference>
+    <Reference Include="IKapC.NET">
+      <HintPath>..\LIbs\IK\IKapC.NET.dll</HintPath>
+    </Reference>
+    <Reference Include="MvCameraControl.Net">
+      <HintPath>..\LIbs\HIK\MvCameraControl.Net.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+</Project>

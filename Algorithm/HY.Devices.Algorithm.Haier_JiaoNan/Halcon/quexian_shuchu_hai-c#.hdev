@@ -1,0 +1,615 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<hdevelop file_version="1.2" halcon_version="21.11.0.0">
+<procedure name="main">
+<interface/>
+<body>
+<c>**结果部分</c>
+<c></c>
+<c>*缺陷坐标</c>
+<l>QuexianRow1:=0</l>
+<l>QuexianColumn1:=0</l>
+<l>QuexianRow2:=0</l>
+<l>QuexianColumn2:=0</l>
+<c>*缺陷类型</c>
+<l>QuexianType:=''</l>
+<c>*面积</c>
+<l>QuexianArea:=0</l>
+<c>*标注存图路径</c>
+<l>Savepath:='F:/Image/标注'</l>
+<c></c>
+<c>**参数部分</c>
+<c>*图片路径，可用两个函数表示，一个是直接图片读取</c>
+<l>ImagePath:='F:/Image/胶南/测试集/主机'</l>
+<l>ImagePath:='F:/Image/胶南/测试集/正常样本100/大条码'</l>
+<c></c>
+<l>ImagePath:='F:/Image/胶南/测试集/正常样本100/白色样本'</l>
+<l>ImagePath:='F:/Image/胶南/测试集/正常样本100/黑色样本'</l>
+<l>ImagePath:='F:/Image/胶南/测试集/1128_img_part1'</l>
+<l>ImagePath:='F:/Image/胶南/测试集/1124_激光测距'</l>
+<c></c>
+<l>ImagePath:='F:/Image/胶南/测试集/正常样本100/白色样本'</l>
+<c>*：输入参数：初始阈值 threholddata</c>
+<c>*白色建议</c>
+<l>threholddata:=6</l>
+<l>Area_huashang_zangwu:=300</l>
+<c>*黑色板材建议</c>
+<l>threholddata:=10</l>
+<l>Area_huashang_zangwu:=600</l>
+<c></c>
+<c>*预处理参照roi</c>
+<l>Row1:=3593</l>
+<l>Col1:=2365</l>
+<l>lenth1:=200</l>
+<l>lenth2:=200</l>
+<c>*显示图片</c>
+<l>bimageshow:=0</l>
+<l>bregionshow:=0</l>
+<c>*傅里叶预处理变换参数，可按默认，不放在函数参数内</c>
+<c></c>
+<c></c>
+<l>Sigma1 := 10.0</l>
+<l>Sigma2 := 3.0</l>
+<c></c>
+<l>dev_open_window (0, 0, 700, 700, 'black', WindowHandle1)</l>
+<c></c>
+<c></c>
+<c>*****模型初始化-最好单独放在一个函数，只有开始的时候调用</c>
+<c></c>
+<c>*分类模型保存的文件</c>
+<l>dictpathFenlei:='F:/Image/胶南/Fenlei_1205.hdict'</l>
+<l>dllpathFeneli:='F:/Image/胶南/Fenlei_1205.hdl'</l>
+<c>*分类模型初始化，windowhandledict，windowhandledict全局变量最好。</c>
+<l>FenleiInt (dllpathFeneli, dictpathFenlei, WindowhandledictFenlei, DLPreprocessParamFenlei, DLModelHandleFenlei)</l>
+<l>hdictpathMubiao:='F:/王晶雷/jiaonan-daizhiqian.hdict'</l>
+<l>hdlpathMubiao:='F:/jiaonanxiyiji-dai.hdl'</l>
+<l>MubiaoIni (hdlpathMubiao, hdictpathMubiao, DLPreprocessParamMubiao, DLDatasetMubiao, DLModelHandleMubiao)</l>
+<c></c>
+<c as_id="image_acquisition" as_name="Image Acquisition 01" as_grp="[1,1]" as_ord="1"></c>
+<c>**遍历文件夹，是按文件夹类型图片遍历，可以改为读取图片。</c>
+<l as_id="image_acquisition" as_name="Image Acquisition 01" as_grp="[1,2]" as_ord="1">list_files (ImagePath, ['files','follow_links'], ImageFiles)</l>
+<l as_id="image_acquisition" as_name="Image Acquisition 01" as_grp="[1,3]" as_ord="1">tuple_regexp_select (ImageFiles, ['\\.(tif|tiff|gif|bmp|jpg|jpeg|jp2|png|pcx|pgm|ppm|pbm|xwd|ima|hobj)$','ignore_case'], ImageFiles)</l>
+<l as_id="image_acquisition" as_name="Image Acquisition 01" as_grp="[2,2]" as_ord="1">for Index := 0 to |ImageFiles| - 1 by 1</l>
+<c></c>
+<l as_id="image_acquisition" as_name="Image Acquisition 01" as_grp="[2,3]" as_ord="1">read_image (Image, ImageFiles[Index])</l>
+<c></c>
+<c></c>
+<c>*****预处理部分</c>
+<c>*图像预处理，将 Row1, Col1, lenth1, lenth2大小的rOI作为参照，进行图像增强</c>
+<l>ProsessImage (Image, ImageScaled, Row1, Col1, lenth1, lenth2)</l>
+<c>*将图像增强后的图片，作为背景，用目标识别进行 ，640是指当时深度训练时的图片大小，作为转换用</c>
+<l>Mubiaocheck (ImageScaled, MubiaoROI, 640, 640, DLModelHandleMubiao, DLPreprocessParamMubiao, Row11, Column11, Row21, Column21)</l>
+<l>crop_rectangle1 (ImageScaled, ImagePart1, Row11, Column11, Row21, Column21)</l>
+<c>*ImagePart1 扣完的图</c>
+<l>get_image_size (ImagePart1, Width, Height)</l>
+<l>*threholddata:=30</l>
+<l>*Area_huashang_zangwu:=300</l>
+<c>*经过傅里叶变换的函数输出感兴趣的区域，重要参数是上面两个。15这个参数变了，这些参数也得变更。</c>
+<l>FftCheck (ImagePart1, ConnectedRegions, ConnectedRegions1, Sigma1, Sigma2, 15, threholddata, Area_huashang_zangwu)</l>
+<c>* *将大条码值扣除，生成分类前区域,12.6号重点改这个,后来发现不扣条码也可以，因为本身条码也有判断</c>
+<l>*cut_code_page (ConnectedRegions, ConnectedRegions1, ImagePart1, CutRegions)</l>
+<c></c>
+<c></c>
+<l>area_center (ConnectedRegions1, Area, Row, Column)</l>
+<c>* *划伤和条码的生成区域</c>
+<l>gen_empty_region(EmptyRegion)</l>
+<c>* *擦伤的生成区域</c>
+<l>gen_empty_region(EmptyRegion2)</l>
+<c>* *脏污的生成区域</c>
+<l>gen_empty_region(EmptyRegion3)</l>
+<c>* *判断区域数量</c>
+<l>Number1 := |Area|</l>
+<l>if (Number1&gt;0)</l>
+<c>    *生成彩色图像模版</c>
+<l>    copy_image(ImagePart1,GImage)</l>
+<l>    copy_image(ImagePart1,BImage)</l>
+<l>    copy_image(ImagePart1,RImage)</l>
+<l>    gen_image_const(Image1, 'byte', Width, Height)</l>
+<c>   *划检测区域</c>
+<l>    gen_rectangle2 (Rectangle1, Row, Column, gen_tuple_const(Number1,0),gen_tuple_const(Number1,150), gen_tuple_const(Number1,150))</l>
+<c></c>
+<l>*     dev_display (ImagePart1)</l>
+<l>*     dev_display (Rectangle1)</l>
+<c>*  缺陷总数量</c>
+<l>     Quexiannum:=0</l>
+<l>     QuexianType:=''</l>
+<l>     QuexianArea:=0</l>
+<l>     ResultScore:=0</l>
+<l>     QuexianRow1:=0</l>
+<l>     QuexianColumn1:=0</l>
+<l>     QuexianRow2:=0</l>
+<l>     QuexianColumn2:=0</l>
+<c>    *  划伤数量</c>
+<l>   Num0:=0</l>
+<c>*  贴纸数量</c>
+<l>   Num1:=0</l>
+<c>*  擦伤数量 </c>
+<l>   Num2:=0</l>
+<c>*  脏污数量 </c>
+<l>   Num3:=0</l>
+<c>   </c>
+<l>   for Index2 := 1 to Number1 by 1</l>
+<c>    </c>
+<c>      *输出参数，缺陷数量，缺陷轮廓，缺陷类型，面积，截图。默认保存在，以型号+时间+默认顺序命名，数量顺序存放在图片文件,并带数量标识，划伤文件夹，凹凸文件夹，赃物文件夹，误判文件夹</c>
+<l>      select_obj (Rectangle1, ObjectSelected, Index2)</l>
+<c>     * 12.6号修改，会超出裁剪区域，按照原图会好点。12.6号验证，不能按原图，坐标对应不起来</c>
+<l>       reduce_domain (ImagePart1, ObjectSelected, ImageReduced1) </l>
+<l>       smallest_rectangle1 (ObjectSelected, cropRow, cropColumn1, cropRow2, cropColumn2)</l>
+<l>           *crop_domain(ImageReduced1, ImagePartdomain)</l>
+<c>            *修改了这个算子可以避免裁剪超出边界的问题。</c>
+<l>      crop_part (ImagePart1, ImagePartdomain, cropRow, cropColumn1, 300, 300)</l>
+<c>     *将小图分类</c>
+<l>      gen_dl_samples_from_images (ImagePartdomain, DLSample)</l>
+<l>      preprocess_dl_samples (DLSample, DLPreprocessParamFenlei)</l>
+<l>      apply_dl_model (DLModelHandleFenlei, DLSample, [], DLResult)</l>
+<c>     *按类文件夹保存part小图片信息，图片产品的条码名称和类型保存，12.6号改为汉字保存 </c>
+<l>      get_system_time (MSecond1, Second1, Minute1, Hour1, Day1, YDay1, Month1, Year1)</l>
+<l>      parse_filename (ImageFiles[Index], BaseName, Extension, Directory)</l>
+<l>      path:='F:/Image/PartImage/test/'+DLResult.classification_class_names[0]</l>
+<l>      imagename:=path+'/'+BaseName+'-'+Index2+'-'+Minute1+'-'+Second1+'-'+MSecond1</l>
+<l>      file_exists (path, FileExists)</l>
+<l>      if (FileExists)</l>
+<l>         write_image (ImagePartdomain, 'tiff', 0, imagename)</l>
+<l>            else</l>
+<l>                make_dir (path)</l>
+<l>             write_image (ImagePartdomain, 'tiff', 0, imagename)   </l>
+<l>            endif</l>
+<c>        *结果为划伤和条码时，用红色表示。12.6号改为用汉字来分配，这样减少训练的时候的顺序问题。 </c>
+<l>      if (DLResult.classification_class_names[0]='划痕' or DLResult.classification_class_names[0]='小贴纸')</l>
+<l>         if(DLResult.classification_confidences[0]&gt;0.5)</l>
+<l>          erosion_rectangle1(ObjectSelected, RegionErosion,40, 40)</l>
+<l>           difference(ObjectSelected, RegionErosion, RegionDifference)</l>
+<l>            union2( EmptyRegion,RegionDifference, EmptyRegion)</l>
+<l>           smallest_rectangle1 (RegionDifference, QRow1, QColumn1, QRow2, QColumn2)</l>
+<l>            QuexianType[Quexiannum]:= [DLResult.classification_class_ids[0]+DLResult.classification_class_names[0]]  </l>
+<l>             QuexianArea[Quexiannum]:= 'area:'+Area[Index2-1]</l>
+<l>             ResultScore[Quexiannum]:=DLResult.classification_confidences[0]</l>
+<l>             QuexianRow1[Quexiannum]:=QRow1</l>
+<l>             QuexianColumn1[Quexiannum]:=QColumn1</l>
+<l>             QuexianRow2[Quexiannum]:=QRow2</l>
+<l>             QuexianColumn2[Quexiannum]:=QColumn2</l>
+<l>            Num0:=Num0+1</l>
+<l>            Quexiannum:=Quexiannum+1</l>
+<l>           endif</l>
+<l>      endif</l>
+<c>      *结果为擦伤时，用蓝色表示。 因为擦伤比较不明显，增加判断分数。</c>
+<c>          </c>
+<l>     if(DLResult.classification_class_names[0]='擦伤')</l>
+<l>    if(DLResult.classification_confidences[0]&gt;0.7)</l>
+<l>          erosion_rectangle1(ObjectSelected, RegionErosion2, 40, 40)</l>
+<l>         difference(ObjectSelected, RegionErosion2, RegionDifference2)</l>
+<l>         union2(RegionDifference2, EmptyRegion2, EmptyRegion2)</l>
+<l>        smallest_rectangle1 (RegionDifference2, QRow1, QColumn1, QRow2, QColumn2)</l>
+<c>      </c>
+<l>           QuexianType[Quexiannum]:= [DLResult.classification_class_ids[0]+DLResult.classification_class_names[0]]  </l>
+<l>             QuexianArea[Quexiannum]:= 'area:'+Area[Index2-1]</l>
+<l>             ResultScore[Quexiannum]:=DLResult.classification_confidences[0]</l>
+<l>             QuexianRow1[Quexiannum]:=QRow1</l>
+<l>             QuexianColumn1[Quexiannum]:=QColumn1</l>
+<l>             QuexianRow2[Quexiannum]:=QRow2</l>
+<l>             QuexianColumn2[Quexiannum]:=QColumn2</l>
+<l>            Quexiannum:=Quexiannum+1</l>
+<c>     </c>
+<l>         Num2:=Num2+1   </l>
+<l>       *stop ()</l>
+<l>        endif</l>
+<l>      endif</l>
+<c>        </c>
+<c>          </c>
+<c>          *结果为脏污时，用绿色表示。</c>
+<c>          *12.5号更改，当时是7，边缘，改为6脏污。</c>
+<l>      if(DLResult.classification_class_names[0]='脏污')</l>
+<c>  </c>
+<l>          erosion_rectangle1(ObjectSelected, RegionErosion3, 40, 40)</l>
+<l>         difference(ObjectSelected, RegionErosion3, RegionDifference3)</l>
+<l>          union2(RegionDifference3, EmptyRegion3, EmptyRegion3)</l>
+<l>          smallest_rectangle1 (RegionDifference3, QRow1, QColumn1, QRow2, QColumn2)</l>
+<l>             QuexianType[Quexiannum]:= [DLResult.classification_class_ids[0]+DLResult.classification_class_names[0]]  </l>
+<l>             QuexianArea[Quexiannum]:= 'area:'+Area[Index2-1]</l>
+<l>             ResultScore[Quexiannum]:=DLResult.classification_confidences[0]</l>
+<l>             QuexianRow1[Quexiannum]:=QRow1</l>
+<l>             QuexianColumn1[Quexiannum]:=QColumn1</l>
+<l>             QuexianRow2[Quexiannum]:=QRow2</l>
+<l>             QuexianColumn2[Quexiannum]:=QColumn2</l>
+<l>            Quexiannum:=Quexiannum+1</l>
+<l>         Num3:=Num3+1</l>
+<c>  </c>
+<l>      endif   </l>
+<c>      </c>
+<c>      </c>
+<l>   endfor  </l>
+<c>   </c>
+<c>   </c>
+<l>dev_display (ImagePart1)</l>
+<l>  overpaint_region(RImage, EmptyRegion, [255,0,0], 'fill') </l>
+<l>  overpaint_region(GImage, EmptyRegion2, [255,0,0], 'fill')</l>
+<l>  overpaint_region(BImage, EmptyRegion3, [255,0,0], 'fill')</l>
+<l>  compose3(RImage, GImage, BImage, MultiChannelImage)</l>
+<c></c>
+<l>    SavepathImage:=Savepath+'/biaozhun-'+BaseName+'-'+Index</l>
+<l>    file_exists (Savepath, FileExists)</l>
+<l>     if (FileExists)</l>
+<l>     write_image(MultiChannelImage,'bmp',0,SavepathImage)</l>
+<l>      else</l>
+<l>       make_dir (Savepath)</l>
+<l>      write_image(MultiChannelImage,'bmp',0,SavepathImage)</l>
+<l>      endif</l>
+<l>endif</l>
+<c>**分类及显示bimageshow为显示分类后的彩色图像，bregionshow显示未分类前的原彩色图和矩形框</c>
+<l>bimageshow:=1</l>
+<l>bregionshow:=0</l>
+<c></c>
+<l> if(bimageshow)</l>
+<l>     bregionshow:=0</l>
+<l> endif</l>
+<l> if(bregionshow)</l>
+<l>     bimageshow:=0</l>
+<l> endif</l>
+<l> if(bimageshow)</l>
+<c>     </c>
+<l>   dev_display (MultiChannelImage)</l>
+<c></c>
+<l>  endif</l>
+<l>  if(bregionshow)</l>
+<c>      *正常在C#里用下面的disp_obj</c>
+<l>      dev_display (MultiChannelImage)</l>
+<l>      dev_display (Rectangle1)</l>
+<l>    *    disp_obj (MultiChannelImage, [H1A1F9104020])</l>
+<l>    *   disp_obj (Rectangle1, [H1A1F9104020])</l>
+<l>  endif</l>
+<c>  </c>
+<c>  *显示在每个缺陷旁边，他的缺陷类别和面积，主要可视化使用，软件这块可以用自己的代码实现。</c>
+<l> message:=''</l>
+<l>for Indexshow := 0 to Quexiannum-1 by 1</l>
+<l>    message:='类别'+ QuexianType[Indexshow]+'大小'+QuexianArea[Indexshow]</l>
+<l>    disp_message (WindowHandle1, message, 'image',  QuexianRow2[Indexshow]+200, QuexianColumn1[Indexshow], 'blue', 'false')</l>
+<l>    endfor</l>
+<l>*stop ()</l>
+<l>endfor</l>
+<c>  </c>
+<c></c>
+<c></c>
+<c>*模型的释放，可参照之前的释放</c>
+<c>*clear_dl_classifier（DLModelHandleFenlei）</c>
+<c>*clear_dl_classifier（DLModelHandleMubiao）</c>
+<c></c>
+<c> </c>
+</body>
+<docu id="main">
+<parameters/>
+</docu>
+</procedure>
+<procedure name="cut_code_page">
+<interface>
+<io>
+<par name="ConnectedRegions" base_type="iconic" dimension="0"/>
+<par name="SelectedRegions777" base_type="iconic" dimension="0"/>
+<par name="Image" base_type="iconic" dimension="0"/>
+</io>
+<oo>
+<par name="SelectedRegions7" base_type="iconic" dimension="0"/>
+</oo>
+</interface>
+<body>
+<l>intensity(Image,Image,Mean, Deviation)</l>
+<l>if(Mean&gt;100)</l>
+<l>    area_center(Image, Area, Row, Column)</l>
+<l>    gen_rectangle2(Rectangle, Row, Column-2000, 0, 200, 200)</l>
+<l>    intensity(Rectangle, Image, Mean1, Deviation1)</l>
+<l>    scale_image(Image, ImageScaled, 240/Mean1, 0)</l>
+<c>    </c>
+<l>    threshold(ImageScaled,Region2, 150, 255)  </l>
+<l>    fill_up(Region2, RegionFillUp)</l>
+<l>    closing_rectangle1(RegionFillUp, RegionClosing1, 100, 100)</l>
+<c>    </c>
+<l>    opening_rectangle1(RegionClosing1, RegionOpening, 4000, 1000)</l>
+<l>    shape_trans(RegionOpening,RegionTrans,'rectangle1')</l>
+<l>    erosion_rectangle1(RegionTrans, RegionErosion1, 3000, 800)</l>
+<l>    reduce_domain(Image,RegionErosion1, ImageReduced2)</l>
+<l>    threshold(ImageReduced2, Region, 0, 90)</l>
+<l>    closing_circle(Region, RegionClosing, 10)</l>
+<l>    opening_circle(RegionClosing, RegionOpening1, 20)</l>
+<c>    </c>
+<l>    shape_trans(RegionOpening1, RegionTrans1, 'rectangle1')</l>
+<l>    area_center(RegionTrans1, Area1, Row3, Column1)</l>
+<l>    gen_rectangle2(Rectangle2, Row3, Column1, 0, 800, 800)</l>
+<c></c>
+<l>    difference(SelectedRegions777, Rectangle2, SelectedRegions77)</l>
+<l>    union1(SelectedRegions77, RegionUnion)</l>
+<l>    intersection(RegionUnion, RegionOpening, SelectedRegions17)</l>
+<l>    connection(SelectedRegions17, SelectedRegions7)</l>
+<l>else</l>
+<l>    threshold(Image, Region1, 200, 255)</l>
+<l>    connection(Region1, ConnectedRegions1)</l>
+<l>    select_shape(ConnectedRegions1, SelectedRegions, 'area', 'and', 500000, 999999999)</l>
+<l>    sort_region(SelectedRegions, SortedRegions, 'upper_left', 'true', 'row')</l>
+<l>    select_obj(SortedRegions, ObjectSelected, 1)</l>
+<l>    dilation_circle(ObjectSelected, RegionDilation, 200)</l>
+<l>    difference(SelectedRegions777, RegionDilation, SelectedRegions7)</l>
+<l>    scale_image(Image, ImageScaled, 3, 0)</l>
+<l>    lines_gauss(ImageScaled, Lines, 2.5, 2, 5, 'dark', 'true', 'gaussian', 'true')</l>
+<l>    gen_region_contour_xld(Lines, Region, 'filled')</l>
+<c>    </c>
+<l>    select_shape(Region, SelectedRegions1, 'row', 'and', 0, 6000/2)</l>
+<c> </c>
+<l>    count_obj(SelectedRegions1, Number)</l>
+<l>    if(Number&gt;0)</l>
+<l>        region_features(SelectedRegions1,'width',Value)</l>
+<l>        tuple_max(Value, Max1)</l>
+<l>        tuple_find(Value,Max1, Indices)</l>
+<l>        select_obj(Region,ObjectSelected1, Indices+1)</l>
+<c>        </c>
+<l>         count_obj (ObjectSelected1, Number1)</l>
+<c>        </c>
+<l>        if (Number1)</l>
+<c>      </c>
+<l>        area_center(ObjectSelected1, Area1, Row3, Column1)</l>
+<l>        gen_rectangle1(Rectangle, Row3, gen_tuple_const(Number1,500),  gen_tuple_const(Number1,6000),gen_tuple_const(Number1,7400) )</l>
+<c></c>
+<l>        endif</l>
+<l>        intersection(SelectedRegions7, Rectangle, SelectedRegions7)</l>
+<c>   </c>
+<l>    endif</l>
+<c></c>
+<l>endif</l>
+<c></c>
+<l>return ()</l>
+</body>
+<docu id="cut_code_page">
+<parameters>
+<parameter id="ConnectedRegions"/>
+<parameter id="Image"/>
+<parameter id="SelectedRegions7"/>
+<parameter id="SelectedRegions777"/>
+</parameters>
+</docu>
+</procedure>
+<procedure name="FenleiInt">
+<interface>
+<ic>
+<par name="DllPath" base_type="ctrl" dimension="0"/>
+<par name="DictPath" base_type="ctrl" dimension="0"/>
+</ic>
+<oc>
+<par name="windowhandledict" base_type="ctrl" dimension="0"/>
+<par name="DLPreprocessParam" base_type="ctrl" dimension="0"/>
+<par name="DLModelHandle" base_type="ctrl" dimension="0"/>
+</oc>
+</interface>
+<body>
+<c>*读取深度模型并配置参数</c>
+<l>read_dict (DictPath, [], [], DLPreprocessParam)</l>
+<l>read_dl_model (DllPath, DLModelHandle)</l>
+<l>query_available_dl_devices (['runtime', 'runtime'], ['gpu', 'cpu'], DLDeviceHandles)</l>
+<l>DLDevice := DLDeviceHandles[0]</l>
+<l>BatchSizeInference := 1</l>
+<l>set_dl_model_param (DLModelHandle, 'batch_size', BatchSizeInference)</l>
+<l>set_dl_model_param (DLModelHandle, 'device', DLDevice)</l>
+<l>get_dl_model_param (DLModelHandle, 'class_names', ClassNames)</l>
+<l>get_dl_model_param (DLModelHandle, 'class_ids', ClassIDs)</l>
+<l>create_dict (DLDataInfo)</l>
+<l>set_dict_tuple (DLDataInfo, 'class_names', ClassNames)</l>
+<l>set_dict_tuple (DLDataInfo, 'class_ids', ClassIDs)</l>
+<l>NumSamples :=8</l>
+<l>create_dict (WindowHandleDict)</l>
+<l>return ()</l>
+</body>
+<docu id="FenleiInt">
+<parameters>
+<parameter id="DLModelHandle"/>
+<parameter id="DLPreprocessParam"/>
+<parameter id="DictPath"/>
+<parameter id="DllPath"/>
+<parameter id="windowhandledict"/>
+</parameters>
+</docu>
+</procedure>
+<procedure name="MubiaoIni">
+<interface>
+<ic>
+<par name="hdlpath1" base_type="ctrl" dimension="0"/>
+<par name="hdictpath1" base_type="ctrl" dimension="0"/>
+</ic>
+<oc>
+<par name="DLPreprocessParam" base_type="ctrl" dimension="0"/>
+<par name="DLDataset" base_type="ctrl" dimension="0"/>
+<par name="DLModelHandle" base_type="ctrl" dimension="0"/>
+</oc>
+</interface>
+<body>
+<c></c>
+<l>read_dict (hdictpath1, [], [], DLDataset)</l>
+<l>read_dl_model (hdlpath1, DLModelHandle)</l>
+<l>create_dl_preprocess_param_from_model (DLModelHandle, 'false', 'full_domain', [], [], [], DLPreprocessParam)</l>
+<c>*每次读取一张</c>
+<l>set_dl_model_param (DLModelHandle, 'batch_size', 1)</l>
+<c></c>
+<c></c>
+<l>return ()</l>
+</body>
+<docu id="MubiaoIni">
+<parameters>
+<parameter id="DLDataset"/>
+<parameter id="DLModelHandle"/>
+<parameter id="DLPreprocessParam"/>
+<parameter id="hdictpath1"/>
+<parameter id="hdlpath1"/>
+</parameters>
+</docu>
+</procedure>
+<procedure name="FftCheck">
+<interface>
+<io>
+<par name="Image" base_type="iconic" dimension="0"/>
+</io>
+<oo>
+<par name="ConnectedRegions" base_type="iconic" dimension="0"/>
+<par name="ConnectedRegions1" base_type="iconic" dimension="0"/>
+</oo>
+<ic>
+<par name="Sigma1" base_type="ctrl" dimension="0"/>
+<par name="Sigma2" base_type="ctrl" dimension="0"/>
+<par name="Fanxiangzengqiang" base_type="ctrl" dimension="0"/>
+<par name="threholddata" base_type="ctrl" dimension="0"/>
+<par name="QueArea" base_type="ctrl" dimension="0"/>
+</ic>
+</interface>
+<body>
+<c></c>
+<c></c>
+<l>get_image_size (Image, Width, Height)</l>
+<c>*创建高低带通滤波器</c>
+<l>gen_gauss_filter (GaussFilter1, Sigma1, Sigma1, 0.0, 'none', 'rft', Width, Height)</l>
+<l>gen_gauss_filter (GaussFilter2, Sigma2, Sigma2, 0.0, 'none', 'rft', Width, Height)</l>
+<l>sub_image (GaussFilter2, GaussFilter1, Filter, 1, 0)</l>
+<c></c>
+<c>*将图像转到频域</c>
+<l>rft_generic (Image, ImageFFT, 'to_freq', 'none', 'complex', Width)</l>
+<c>*使用上面的带通滤波器进行过滤</c>
+<l>convol_fft (ImageFFT, Filter, ImageConvol)</l>
+<c>*将图像还原到时域</c>
+<l>rft_generic (ImageConvol, ImageFiltered, 'from_freq', 'n', 'real', Width)</l>
+<c>*用方格内的最大灰度减去最小灰度以实现凸显缺陷的目的</c>
+<l>gray_range_rect (ImageFiltered, ImageResult, 15, 15)</l>
+<c>*获取图像内的最大灰度值和最小灰度值，这里可以考虑改成用平均灰度值进行测试，但是目前还未进行测试</c>
+<l>min_max_gray (ImageResult, ImageResult, 0, Min, Max, Range) </l>
+<c>*对图像进行二值化</c>
+<l>threshold (ImageResult, RegionDynThresh, threholddata,255)</l>
+<l>connection (RegionDynThresh, ConnectedRegions)</l>
+<l>select_shape(ConnectedRegions, SelectedRegions, 'area', 'and',QueArea, 92000)</l>
+<l>union1(SelectedRegions, RegionUnion)</l>
+<l>closing_rectangle1(RegionUnion, RegionClosing, 100, 100)</l>
+<l>connection (RegionClosing, ConnectedRegions1)</l>
+<c></c>
+<l>return ()</l>
+</body>
+<docu id="FftCheck">
+<parameters>
+<parameter id="ConnectedRegions"/>
+<parameter id="ConnectedRegions1"/>
+<parameter id="Fanxiangzengqiang"/>
+<parameter id="Image"/>
+<parameter id="QueArea"/>
+<parameter id="Sigma1"/>
+<parameter id="Sigma2"/>
+<parameter id="threholddata"/>
+</parameters>
+</docu>
+</procedure>
+<procedure name="ProsessImage">
+<interface>
+<io>
+<par name="Image" base_type="iconic" dimension="0"/>
+</io>
+<oo>
+<par name="ImageScaled" base_type="iconic" dimension="0"/>
+</oo>
+<ic>
+<par name="Row1" base_type="ctrl" dimension="0"/>
+<par name="Col1" base_type="ctrl" dimension="0"/>
+<par name="lenth1" base_type="ctrl" dimension="0"/>
+<par name="lenth2" base_type="ctrl" dimension="0"/>
+</ic>
+</interface>
+<body>
+<c></c>
+<c></c>
+<l>gen_rectangle2 (Rectangle, Row1, Col1, 0, lenth1, lenth2)</l>
+<l>intensity (Rectangle, Image, Mean, Deviation)</l>
+<l>if (Mean&lt;100)</l>
+<l>    if(Mean=0)</l>
+<l>        Mean:=50</l>
+<l>    endif</l>
+<l>    scale:=100/Mean</l>
+<l>    scale_image (Image, ImageScaled, scale, 0)</l>
+<l>else</l>
+<l>       scale:=150/Mean</l>
+<l>       scale_image (Image, ImageScaled, scale, 0)</l>
+<l>endif</l>
+<c></c>
+<c></c>
+<l>return ()</l>
+<c></c>
+</body>
+<docu id="ProsessImage">
+<parameters>
+<parameter id="Col1"/>
+<parameter id="Image"/>
+<parameter id="ImageScaled"/>
+<parameter id="Row1"/>
+<parameter id="lenth1"/>
+<parameter id="lenth2"/>
+</parameters>
+</docu>
+</procedure>
+<procedure name="Mubiaocheck">
+<interface>
+<io>
+<par name="Image" base_type="iconic" dimension="0"/>
+</io>
+<oo>
+<par name="MubiaoROI" base_type="iconic" dimension="0"/>
+</oo>
+<ic>
+<par name="ImageWidthXunlian" base_type="ctrl" dimension="0"/>
+<par name="ImageHeightXunlian" base_type="ctrl" dimension="0"/>
+<par name="DLModelHandle" base_type="ctrl" dimension="0"/>
+<par name="DLPreprocessParam" base_type="ctrl" dimension="0"/>
+</ic>
+<oc>
+<par name="Row11" base_type="ctrl" dimension="0"/>
+<par name="Column11" base_type="ctrl" dimension="0"/>
+<par name="Row21" base_type="ctrl" dimension="0"/>
+<par name="Column21" base_type="ctrl" dimension="0"/>
+</oc>
+</interface>
+<body>
+<l>  gen_dl_samples_from_images (Image, DLSampleInference)</l>
+<l>    preprocess_dl_samples (DLSampleInference, DLPreprocessParam)</l>
+<l>    apply_dl_model (DLModelHandle, DLSampleInference, [], DLResult)</l>
+<c></c>
+<l>    get_dict_tuple (DLResult, 'bbox_confidence', confidence)</l>
+<l>    get_dict_tuple (DLResult, 'bbox_row1', Row1)</l>
+<l>      get_dict_tuple (DLResult, 'bbox_row2', Row2)</l>
+<l>    get_dict_tuple (DLResult, 'bbox_col1', Col1)</l>
+<l>     get_dict_tuple (DLResult, 'bbox_col2', Col2)</l>
+<l>  if (confidence&gt;0.95)</l>
+<c>  </c>
+<l>   get_image_size (Image, Width, Height)</l>
+<l>     scalex:=Width/ImageWidthXunlian</l>
+<l>    scaley:=Height/ImageHeightXunlian</l>
+<c>    </c>
+<c>    </c>
+<l>    gen_rectangle1 (Rectangle, Row1, Col1, Row2, Col2)</l>
+<c>   *修改12.5，增加1，因为检测边框时会有-0.24，后面无法裁剪</c>
+<l>   Row11:=(Row1[0]+1)*scaley</l>
+<l>   Column11:=Col1[0]*scalex</l>
+<l>   Row21:=Row2[0]*scaley</l>
+<l>   Column21:=Col2[0]*scalex</l>
+<c>  </c>
+<l>    zoom_region (Rectangle, RegionZoom, scalex, scaley) </l>
+<l>     select_obj (RegionZoom, ObjectSelected, 1) </l>
+<l>    copy_obj (ObjectSelected, MubiaoROI, 1, 1)</l>
+<c></c>
+<l>  else</l>
+<l>       gen_rectangle1 (Rectangle, 0, 0, Width, Height) </l>
+<l>       copy_obj (Rectangle, MubiaoROI, 1, 1)</l>
+<l>  endif      </l>
+<c>  </c>
+<l>return ()</l>
+</body>
+<docu id="Mubiaocheck">
+<parameters>
+<parameter id="Column11"/>
+<parameter id="Column21"/>
+<parameter id="DLModelHandle"/>
+<parameter id="DLPreprocessParam"/>
+<parameter id="Image"/>
+<parameter id="ImageHeightXunlian"/>
+<parameter id="ImageWidthXunlian"/>
+<parameter id="MubiaoROI"/>
+<parameter id="Row11"/>
+<parameter id="Row21"/>
+</parameters>
+</docu>
+</procedure>
+</hdevelop>

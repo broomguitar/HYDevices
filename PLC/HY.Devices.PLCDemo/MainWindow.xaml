@@ -1,0 +1,155 @@
+﻿<Window x:Class="HY.Devices.PLCDemo.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:HY.Devices.PLCDemo"
+        mc:Ignorable="d"
+        Title="MainWindow" Height="650" Width="1000" FontSize="20">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="50"/>
+            <RowDefinition Height="auto"/>
+            <RowDefinition />
+            <RowDefinition Height="auto"/>
+        </Grid.RowDefinitions>
+        <StackPanel VerticalAlignment="Center" Orientation="Horizontal">
+            <Label>PLC类型</Label>
+            <ComboBox x:Name="cb_plcTypes" Width="250" SelectionChanged="cb_plcTypes_SelectionChanged"/>
+            <Label>IP:</Label>
+            <TextBox x:Name="tb_ip" Width="250" VerticalContentAlignment="Center"  Text="192.168.150.1"/>
+            <Label>端口:</Label>
+            <TextBox x:Name="tb_port" Width="100" VerticalContentAlignment="Center" Text="4999"/>
+        </StackPanel>
+        <Grid Grid.Row="1">
+            <StackPanel HorizontalAlignment="Right" Orientation="Horizontal">
+                <Ellipse Width="80" Height="80" Name="elp_status" Fill="Gray" StrokeThickness="1"/>
+                <Button x:Name="conn" Content="连接PLC" Margin="10" Width="100" Height="50" Click="conn_Click" />
+                <Button x:Name="disConn" Content="关闭PLC" Foreground="White" Background="Red" Margin=" 10" Width="100" Height="50" Click="disConn_Click"/>
+            </StackPanel>
+        </Grid>
+        <UniformGrid Columns="2" Grid.Row="2">
+            <GroupBox Header="读数据">
+                <StackPanel>
+                    <StackPanel Orientation="Horizontal" Margin="0 20 0 0">
+                        <Label Content="   地址值:"/>
+                        <TextBox x:Name="tb_address" Width="300" VerticalContentAlignment="Center"/>
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" Margin="0 20">
+                        <Label Content="连续读取:"/>
+                        <TextBox x:Name="tb_num" Width="150" VerticalContentAlignment="Center"/>
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" Margin="0 0 0 20 ">
+                        <Label Content="       结果:"/>
+                        <TextBox x:Name="tb_ret" Width="350" VerticalContentAlignment="Center"/>
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal">
+                        <Label Content="数据类型:" VerticalAlignment="Center"/>
+                        <ComboBox x:Name="cb_dataType" Width="200" HorizontalContentAlignment="Center"  VerticalContentAlignment="Center" Text="{Binding RelativeSource={ RelativeSource Mode=FindAncestor, AncestorType=Window},Path=DataType,Mode=OneWayToSource,UpdateSourceTrigger=PropertyChanged}" VerticalAlignment="Center" Height="50">
+                            <ComboBoxItem Content="Bool"/>
+                            <ComboBoxItem Content="Int16"/>
+                            <ComboBoxItem Content="Int32" IsSelected="True"/>
+                            <ComboBoxItem Content="Int64"/>
+                            <ComboBoxItem Content="UInt16"/>
+                            <ComboBoxItem Content="UInt32"/>
+                            <ComboBoxItem Content="Uint64"/>
+                            <ComboBoxItem Content="Byte"/>
+                            <ComboBoxItem Content="Char"/>
+                            <ComboBoxItem Content="Float"/>
+                            <ComboBoxItem Content="Double"/>
+                        </ComboBox>
+                        <Button x:Name="btn_readData" Content="读取数据" Margin="10" Width="100" Height="50" Click="btn_readData_Click"/>
+                    </StackPanel>
+                    <Border BorderBrush="Blue" BorderThickness="1">
+                        <StackPanel Orientation="Horizontal">
+                            <Label Content="读取间隔:" VerticalAlignment="Center"/>
+                            <TextBox x:Name="tb_elapsed" Width="200" Height=" 50" VerticalAlignment="Center" VerticalContentAlignment="Center"/>
+                            <Label Content="ms" VerticalAlignment="Center"/>
+                            <ToggleButton x:Name="btn_pollingReadData" Margin="10" Width="100" Height="50" IsChecked="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=Window}, Path=Flag,Mode=OneWayToSource,UpdateSourceTrigger=PropertyChanged}"  Click="btn_pollingReadData_Click" >
+                                <ToggleButton.Style>
+                                    <Style TargetType="ToggleButton">
+                                        <Style.Triggers>
+                                            <Trigger Property="IsChecked" Value="True">
+                                                <Setter Property="Content" Value="停止读取"/>
+                                            </Trigger>
+                                            <Trigger Property="IsChecked" Value="False">
+                                                <Setter Property="Content" Value="轮询读取"/>
+                                            </Trigger>
+                                            <Trigger Property="IsChecked" Value="{x:Null}">
+                                                <Setter Property="Content" Value="轮询读取"/>
+                                            </Trigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </ToggleButton.Style>
+                            </ToggleButton>
+                        </StackPanel>
+                    </Border>
+                    <StackPanel Orientation="Horizontal">
+                        <Label Content="检测地址值"/>
+                        <TextBox x:Name="tb_monitorAddress" Width="150"/>
+                        <ComboBox x:Name="cb_monitorType" Width="120">
+                            <ComboBoxItem Content="上升沿" IsSelected="True"/>
+                            <ComboBoxItem Content="下降沿"/>
+                        </ComboBox>
+                        <Label Content="信号"/>
+                        <Ellipse x:Name="elp_signal" Fill="Gray" Width="30" Height="30"/>
+                    </StackPanel>
+                    <ToggleButton x:Name="tbtn_monitor" Margin="10" Width="100" Height="50" IsChecked="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=Window}, Path=MonitorFlag,Mode=OneWayToSource,UpdateSourceTrigger=PropertyChanged}"  Click="tbtn_monitor_Click" >
+                        <ToggleButton.Style>
+                            <Style TargetType="ToggleButton">
+                                <Style.Triggers>
+                                    <Trigger Property="IsChecked" Value="True">
+                                        <Setter Property="Content" Value="停止监测"/>
+                                    </Trigger>
+                                    <Trigger Property="IsChecked" Value="False">
+                                        <Setter Property="Content" Value="开始监测"/>
+                                    </Trigger>
+                                    <Trigger Property="IsChecked" Value="{x:Null}">
+                                        <Setter Property="Content" Value="开始监测"/>
+                                    </Trigger>
+                                </Style.Triggers>
+                            </Style>
+                        </ToggleButton.Style>
+                    </ToggleButton>
+                </StackPanel>
+            </GroupBox>
+            <GroupBox Header="写数据">
+                <StackPanel>
+                    <StackPanel Orientation="Horizontal" Margin="0 20 0 0">
+                        <Label Content="地址值:"/>
+                        <TextBox x:Name="tb_writeAddress" Width="300" VerticalContentAlignment="Center"/>
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" Margin="0 20">
+                        <Label Content="数据类型:" VerticalAlignment="Center"/>
+                        <ComboBox x:Name="cb_writeDataType" Width="200" HorizontalContentAlignment="Center"  VerticalContentAlignment="Center" Text="{Binding RelativeSource={ RelativeSource Mode=FindAncestor, AncestorType=Window},Path=WriteDataType,Mode=OneWayToSource,UpdateSourceTrigger=PropertyChanged}" VerticalAlignment="Center" Height="50">
+                            <ComboBoxItem Content="Bool"/>
+                            <ComboBoxItem Content="Int16"/>
+                            <ComboBoxItem Content="Int32" IsSelected="True"/>
+                            <ComboBoxItem Content="Int64"/>
+                            <ComboBoxItem Content="UInt16"/>
+                            <ComboBoxItem Content="UInt32"/>
+                            <ComboBoxItem Content="Uint64"/>
+                            <ComboBoxItem Content="Byte"/>
+                            <ComboBoxItem Content="Char"/>
+                            <ComboBoxItem Content="String"/>
+                            <ComboBoxItem Content="Float"/>
+                            <ComboBoxItem Content="Double"/>
+                        </ComboBox>
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal">
+                        <Label Content="写入值:"/>
+                        <TextBox x:Name="tb_writeValue" Width="300" VerticalContentAlignment="Center"/>
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" Margin="10">
+                        <Button x:Name="btn_write"  Height="50" Width="120" Content="写入数据" Click="btn_write_Click" />
+                        <Ellipse Width="30" Height="30" Fill="Gray" Name="elp_writeStatus" Margin="10 0 0 0"/>
+                    </StackPanel>
+                </StackPanel>
+            </GroupBox>
+        </UniformGrid>
+        <StatusBar Grid.Row="3" Margin="10" FontSize="14" HorizontalAlignment="Center">
+            <StatusBarItem Content="耗时"/>
+            <StatusBarItem Name="time" FontSize="18"/>
+        </StatusBar>
+    </Grid>
+</Window>

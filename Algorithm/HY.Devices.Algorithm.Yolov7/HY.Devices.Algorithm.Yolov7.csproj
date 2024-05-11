@@ -1,0 +1,33 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+	  <TargetFrameworks>net48;net6.0-windows</TargetFrameworks>
+    <OutputType>Library</OutputType>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <UseWPF>true</UseWPF>
+    <ImportWindowsDesktopTargets>true</ImportWindowsDesktopTargets>
+    <AssemblyTitle>HY.Devices.Algorithm.Skyworth</AssemblyTitle>
+    <Company>HP</Company>
+    <Product>HY.Devices.Algorithm.Skyworth</Product>
+    <Copyright>Copyright © HP 2023</Copyright>
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
+    <FileVersion>1.0.0.0</FileVersion>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\HY.Devices.Algorithm\HY.Devices.Algorithm.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
+    <PackageReference Include="Microsoft.ML.OnnxRuntime.Gpu" Version="1.15.0" />
+    <PackageReference Include="Microsoft.ML.OnnxRuntime.Managed" Version="1.15.0" />
+    <PackageReference Include="SixLabors.ImageSharp" Version="2.0.0" />
+    <PackageReference Include="System.ComponentModel.Composition" Version="8.0.0" />
+    <PackageReference Include="System.Data.DataSetExtensions" Version="4.5.0" />
+    <PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="6.0.0" />
+    <PackageReference Include="System.Text.Encoding.CodePages" Version="7.0.0" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="halcondotnetxl">
+      <HintPath>..\Libs\halcondotnetxl.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+</Project>

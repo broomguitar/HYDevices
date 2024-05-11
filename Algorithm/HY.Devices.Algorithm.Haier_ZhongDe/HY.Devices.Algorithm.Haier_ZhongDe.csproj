@@ -1,0 +1,26 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+	  <TargetFrameworks>net48;net6.0-windows</TargetFrameworks>
+    <OutputType>Library</OutputType>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <AssemblyTitle>HY.Devices.Algorithm.Haier_ZhongDe</AssemblyTitle>
+    <Product>HY.Devices.Algorithm.Haier_ZhongDe</Product>
+    <Copyright>Copyright ©  2023</Copyright>
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
+    <FileVersion>1.0.0.0</FileVersion>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\HY.Devices.Algorithm\HY.Devices.Algorithm.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="Emgu.CV.Platform.NetStandard">
+      <HintPath>depends\Emgu.CV.Platform.NetStandard.dll</HintPath>
+    </Reference>
+    <Reference Include="halcondotnetxl">
+      <HintPath>..\Libs\halcondotnetxl.dll</HintPath>
+    </Reference>
+    <Reference Include="PaddleOCR.Onnx">
+      <HintPath>depends\PaddleOCR.Onnx.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+</Project>

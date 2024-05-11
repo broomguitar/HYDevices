@@ -1,0 +1,186 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<hdevelop file_version="1.2" halcon_version="22.11.0.0">
+<procedure name="main">
+<interface/>
+<body>
+<c></c>
+<c></c>
+<c>*输入</c>
+<c>*门齐左ROI的Row1, Column1, Row12, Column12</c>
+<c>*门齐右ROI的Row1, Column1, Row12, Column12</c>
+<c>*threholddata,默认225</c>
+<c>*object图片</c>
+<c></c>
+<c>*输出</c>
+<c>*右门坐标：RowExtendstart,ColExtendstart, RowExtendend, ColExtendend</c>
+<c>*左门中间坐标  Row3, Column3</c>
+<c>*左门右坐标   RowRight  ColRight</c>
+<c>*距离DistanceResult</c>
+<c>*  灰白色 225 255  深蓝色带白边 126, 159</c>
+<l>thresholddata:=225</l>
+<l>maxthresholddata := 255</l>
+<l>DistanceResult:=0</l>
+<c></c>
+<c></c>
+<c></c>
+<c></c>
+<c></c>
+<l>list_files ('E:/Projects/TeBing/门齐/黑', ['files','follow_links','recursive'], ImageFiles)</l>
+<l>tuple_regexp_select (ImageFiles, ['\\.(tif|tiff|gif|bmp|jpg|jpeg|jp2|png|pcx|pgm|ppm|pbm|xwd|ima|hobj)$','ignore_case'], ImageFiles)</l>
+<l>for Index := 0 to |ImageFiles| - 1 by 1</l>
+<l>*     read_image (Image,  ImageFiles[Index])</l>
+<l>    read_image (Image, 'E://Projects//TeBing//门齐//黑//IKLinearCamera_DetectDoorAlign5_20221226110944270 - 副本.jpg')</l>
+<c>    </c>
+<l>    get_image_size (Image, Width, Height)</l>
+<c>    *</c>
+<l>    dev_open_window_fit_image (Image, 0, 0, -1, -1, WindowHandle)</l>
+<l>    dev_display (Image)</l>
+<l>*     draw_rectangle1 (WindowHandle, Row1, Column1, Row12, Column12)</l>
+<l>*     draw_rectangle1 (WindowHandle, Row2, Column2, Row22, Column22)</l>
+<c>    </c>
+<l>    Row1:= 5</l>
+<l>    Column1:=Width/5</l>
+<l>    Row12:=Height/3</l>
+<l>    Column12:=Width*3/10</l>
+<c>    </c>
+<l>    Row2:= 5</l>
+<l>    Column2:=Width*8/10</l>
+<l>    Row22:=Height/3</l>
+<l>    Column22:=Width*9/10</l>
+<l>*     gen_rectangle1 (Rectangle1, Row1, Column1, Row12, Column12)</l>
+<l>*     gen_rectangle1 (Rectangle2, Row2, Column2, Row22, Column22)</l>
+<c></c>
+<l>    dev_display (Image)</l>
+<l>    gen_rectangle1 (Rectangle1, Row1, Column1, Row12, Column12)</l>
+<l>    reduce_domain (Image, Rectangle1, ImageReduced1)</l>
+<l>    decompose3(ImageReduced1, Image1, Image2, Image3)</l>
+<l>    trans_from_rgb(Image1, Image2, Image3, ImageResult1, ImageResult2, ImageResult3, 'hsv')</l>
+<l>    smallest_rectangle2 (Rectangle1, Row, Column, Phi, Length1, Length2)</l>
+<l>    gen_rectangle2 (Rectangle3, Row, Column, Phi, Length1, Length2)</l>
+<l>    intensity(ImageReduced1, ImageReduced1, Mean, Deviation)  </l>
+<l>    Scale:=1</l>
+<l>    if(Mean&lt;230)</l>
+<l>        Scale:=250/Mean</l>
+<l>    endif</l>
+<l>       if(Mean&lt;=20)</l>
+<l>        Scale:=200/Mean</l>
+<l>    endif</l>
+<l>    scale_image(Image1, ImageScaled1, Scale, 0)</l>
+<l>    threshold (ImageScaled1, Region, thresholddata, maxthresholddata)</l>
+<c></c>
+<l>*     threshold (ImageScaled1, Region, 126, 159)</l>
+<l>*     threshold (ImageScaled1, Region,threholddata, 255)</l>
+<l>    dilation_circle (Region, RegionDilation, 5)</l>
+<l>     *closing_rectangle1 (Region, RegionDilation, 100, 100)</l>
+<l>    fill_up(RegionDilation, RegionFillUp)</l>
+<l>    opening_rectangle1 (RegionFillUp, RegionOpen,Length2, 3*Length2/4)</l>
+<l>    connection (RegionOpen, ConnectedRegions)</l>
+<l>*     select_shape (ConnectedRegions, SelectedRegions, 'area', 'and', 649.35, 5881.26)</l>
+<c></c>
+<l>    select_shape_std (ConnectedRegions, SelectedRegions, 'max_area', 70)</l>
+<l>   count_obj (SelectedRegions, Number)</l>
+<c>   </c>
+<l>   if (Number&gt;0)    </l>
+<l>     gen_contour_region_xld (SelectedRegions, Contours, 'border')</l>
+<l>     segment_contours_xld (Contours, ContoursSplit, 'lines_circles', 3, 20,20)</l>
+<l>  *  threshold_sub_pix (ImageScaled1, Border1, 120)</l>
+<l>     select_contours_xld (ContoursSplit, SelectedContours, 'contour_length', Length2, Length2*2+50, Length2, Length2*2+50)</l>
+<l>*      select_contours_xld (SelectedContours, SelectedContours1, Width, 50, Length2*2+350, -0.5, 0.5)</l>
+<c></c>
+<l>    *select_shape_xld (SelectedContours, SelectedXLD1,'outer_radius', 'and', 40, 2000)</l>
+<l>     select_shape_xld (SelectedContours, SelectedXLD, 'phi_points', 'and', -0.5, 0.5)</l>
+<l>     sort_contours_xld (SelectedXLD, SortedContours, 'upper_left', 'true', 'row')</l>
+<l>     select_obj (SortedContours, ObjectSelected, 1)</l>
+<l>     smooth_contours_xld (ObjectSelected, SmoothedContours,9)</l>
+<l>   *  area_center_xld (SmoothedContours, Area, Row3, Column3, PointOrder)</l>
+<l>      area_center_points_xld (SmoothedContours, Area, Row3, Column3)</l>
+<l>      get_contour_xld (SmoothedContours, Rowxld, Colxld)</l>
+<l>      tuple_max (Colxld, Max)</l>
+<l>      tuple_find (Colxld, Max, Indices)</l>
+<l>      RowRight:=Rowxld[Indices]</l>
+<l>      ColRight:=Colxld[Indices]</l>
+<l>   endif</l>
+<c>   </c>
+<c>   </c>
+<c>   </c>
+<c>   </c>
+<l>    gen_rectangle1 (Rectangle2, Row2, Column2, Row22, Column22)</l>
+<l>    reduce_domain (Image, Rectangle2, ImageReduced2)</l>
+<l>    decompose3(ImageReduced2, Image4, Image5, Image6)</l>
+<l>    trans_from_rgb(Image4, Image5, Image6, ImageResult4, ImageResult5, ImageResult6, 'hsv')</l>
+<l>    intensity(ImageReduced2, ImageReduced2, Mean2, Deviation2)  </l>
+<l>     smallest_rectangle2 (Rectangle2, Row21, Column21, Phi2, Length3, Length4)</l>
+<c>     </c>
+<l>    Scale:=1</l>
+<l>    if(20&lt;Mean2&lt;230)</l>
+<l>        Scale2:=180/Mean2</l>
+<l>    endif</l>
+<l>      if(Mean2&lt;=20)</l>
+<l>        Scale2:=230/Mean2</l>
+<l>    endif</l>
+<l>    scale_image(Image4, ImageScaled2, Scale2,0)</l>
+<l>    threshold (ImageScaled2, Region2, thresholddata, maxthresholddata)</l>
+<c></c>
+<l>*     threshold (ImageScaled2, Region2,threholddata, 255)</l>
+<l>    dilation_circle (Region2, RegionDilation2, 5)</l>
+<l>*   closing_rectangle1 (Region2, RegionDilation2, 100, 100)</l>
+<l>    fill_up (RegionDilation2, RegionFillUp2)</l>
+<l>    opening_rectangle1 (RegionFillUp2, RegionOpen2, Length4, 1*Length4/4)</l>
+<l>    connection (RegionOpen2, ConnectedRegions2)</l>
+<l>    select_shape_std (ConnectedRegions2, SelectedRegions2, 'max_area', 70)</l>
+<l>*     select_shape (ConnectedRegions2, SelectedRegions2, 'area', 'and', 649.35, 5881.26)</l>
+<l>    count_obj (SelectedRegions2, Number2)</l>
+<l>   if (Number2&gt;0)</l>
+<l>    gen_contour_region_xld (SelectedRegions2, Contours2, 'border')</l>
+<l>    segment_contours_xld (Contours2, ContoursSplit2, 'lines_circles',5,20,20)</l>
+<l>    select_contours_xld (ContoursSplit2, SelectedContours2, 'contour_length', Length2+10, Length2*2+350, Length2+10, Length2*2+350)</l>
+<l>*     select_contours_xld (SelectedContours2, SelectedContours2, Colxld, 50, Length2*2+350, -0.5, 0.5)</l>
+<l>    sort_contours_xld (SelectedContours2, SortedContours2, 'upper_left', 'true', 'row')</l>
+<l>    select_obj (SortedContours2, ObjectSelected2, 1)</l>
+<l>    smooth_contours_xld (ObjectSelected2, SmoothedContours2, 15)</l>
+<l>    fit_line_contour_xld (SmoothedContours2, 'tukey', -1, 0, 11, 2, RowBegin, ColBegin, RowEnd, ColEnd, Nr, Nc, Dist)</l>
+<l>    select_shape_xld (SmoothedContours2, SelectedXLD2,'phi_points', 'and', -0.5, 0.5)</l>
+<l>    area_center_xld (SelectedXLD2, Area1, Row4, Column4, PointOrder1)</l>
+<c></c>
+<c></c>
+<c>    </c>
+<l>        if (Number&gt;0)</l>
+<l>            gen_region_line (RegionLines1, RowBegin, ColBegin, RowEnd, ColEnd)</l>
+<c>            </c>
+<l>*             distance_pl (Row3, Column3, RowBegin, ColBegin, RowEnd, ColEnd, Distance)</l>
+<l>*             distance_pl (RowRight, ColRight, RowBegin, ColBegin, RowEnd, ColEnd, Distance2)</l>
+<l>            line_position (RowBegin, ColBegin, RowEnd, ColEnd, RowCenter, ColCenter, Length, Phi1)</l>
+<l>            linelenth:=Column22-Column1</l>
+<l>            RowExtendstart:=RowCenter+sin(Phi+1.5708)*linelenth</l>
+<l>            ColExtendstart:=ColCenter-cos(Phi+1.5708)*linelenth</l>
+<l>            RowExtendend:=RowCenter-sin(Phi+1.5708)*linelenth</l>
+<l>            ColExtendend:=ColCenter+cos(Phi+1.5708)*linelenth</l>
+<c>            </c>
+<l>            gen_region_line (RegionLines, RowExtendstart, ColExtendstart, RowExtendend, ColExtendend)</l>
+<l>            distance_pl (Row3, Column3, RowExtendstart, ColExtendstart, RowExtendend, ColExtendend, Distance)</l>
+<l>            distance_pl (RowRight, ColRight, RowExtendstart, ColExtendstart, RowExtendend, ColExtendend, Distance2)</l>
+<l>            gen_cross_contour_xld (Cross, Row3, Column3, 16, 60)</l>
+<l>            gen_cross_contour_xld (Cross1,  RowRight, ColRight, 16, 60)</l>
+<l>            dev_set_line_width (5)</l>
+<l>            dev_display (Image)</l>
+<l>            dev_display (SmoothedContours)</l>
+<l>            dev_display (SmoothedContours2)</l>
+<l>            dev_display (RegionLines)</l>
+<l>            dev_display (Cross)</l>
+<l>            dev_display (Cross1)</l>
+<l>            disp_message (WindowHandle, '高度差为：'+Distance, 'window', 40, 40, 'red', 'true')</l>
+<l>            disp_message (WindowHandle, '高度右边差为：'+Distance2, 'window', 100, 100, 'red', 'true')</l>
+<c>    </c>
+<l>        endif</l>
+<l>    stop ()</l>
+<l>   endif</l>
+<c>    </c>
+<l>endfor</l>
+<c></c>
+<c></c>
+</body>
+<docu id="main">
+<parameters/>
+</docu>
+</procedure>
+</hdevelop>
